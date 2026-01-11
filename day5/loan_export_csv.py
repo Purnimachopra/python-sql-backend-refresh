@@ -61,6 +61,10 @@ class Loan:
             )
             writer.writeheader()
             writer.writerows(schedule)
+            "If the dictionary passed to the writerow() method contains a key not found in fieldnames, "
+            "the optional extrasaction parameter indicates what action to take. "
+            "If it is set to 'raise' a ValueError is raised. If it is set to 'ignore', "
+            "extra values in the dictionary are ignored."
 
 
 # Test CSV export
