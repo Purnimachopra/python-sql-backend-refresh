@@ -1,2 +1,4 @@
 fastapi
 uvicorn
+"pip install -r requirements.txt"
+"run this command to install these packages for setup on any machine"
