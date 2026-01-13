@@ -7,7 +7,7 @@ from schemas import LoanRequest, LoanResponse, LoanListResponse, UserCreate,Toke
 from jose import JWTError, jwt
 from typing import List
 from fastapi import Query
-from auth import get_current_user
+from auth import get_current_user,get_password_hash,verify_password,create_access_token
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 

@@ -9,7 +9,9 @@ from database import Base
 from fastapi.testclient import TestClient
 
 # In-memory SQLite database for tests
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+#SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+
+SQLALCHEMY_DATABASE_URL = "sqlite://"
 print("🟢 TEST MODE → In-memory database configured")
 
 """This creates a database:
