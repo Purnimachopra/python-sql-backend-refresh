@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 
 from database import Base, engine, SessionLocal
 from models import LoanCalculator, LoanRecord
-from schemas import LoanRequest, LoanResponse
+from schemas import LoanRequest, LoanResponse, LoanListResponse
+
+from typing import List
+from fastapi import Query
 
 app = FastAPI(title="Loan Service with Database")
 
@@ -12,7 +15,7 @@ Base.metadata.create_all(bind=engine)
 
 
 def get_db():
-    db = SessionLocal() 
+    db = SessionLocal()
     try:
         yield db
     finally:
@@ -44,3 +47,22 @@ def create_loan(request: LoanRequest, db: Session = Depends(get_db)):
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/loans", response_model=LoanListResponse)
+def get_loans(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, le=50),
+    db: Session = Depends(get_db)
+):
+    loans = db.query(LoanRecord).offset(skip).limit(limit).all()
+    return {"loans": loans}
+
+@app.get("/loans/{loan_id}", response_model=LoanResponse)
+def get_loan_by_id(loan_id: int, db: Session = Depends(get_db)):
+    loan = db.query(LoanRecord).filter(LoanRecord.id == loan_id).first()
+
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+
+    return loan
