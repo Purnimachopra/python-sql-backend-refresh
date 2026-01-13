@@ -2,3 +2,24 @@ fastapi
 uvicorn
 "pip install -r requirements.txt"
 "run this command to install these packages for setup on any machine"
+"What Happens If You Don’t Use requirements.txt
+Situation	Result
+New laptop	App fails
+Recruiter tests code	Errors
+Cloud deployment	Build fails
+Docker image	Cannot build"
+
+"How You Should Explain This in Interviews
+
+If asked:
+
+Why do you use requirements.txt?
+
+You can say:
+
+“It ensures environment consistency by listing project dependencies, 
+making the application reproducible across machines and deployment environments.”"
+
+"requirements.txt is not optional in professional work.
+It’s a minimum standard, like tests and Git."
+
