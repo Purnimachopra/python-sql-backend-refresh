@@ -1,23 +1,23 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, HTTPException, status, FastAPI
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-
 from database import Base, engine, SessionLocal
-from models import LoanCalculator, LoanRecord
-from schemas import LoanRequest, LoanResponse, LoanListResponse
-
+from models import User, LoanCalculator,LoanRecord
+from schemas import LoanRequest, LoanResponse, LoanListResponse, UserCreate,Token
+from jose import JWTError, jwt
 from typing import List
 from fastapi import Query
+from auth import get_current_user
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 app = FastAPI(title="Loan Service with Database")
 
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-"""SessionLocal comes from database.py
 
-Uses loan.db (disk)
-Correct for production
-"""
 def get_db():
     db = SessionLocal()
     try:
@@ -27,12 +27,12 @@ def get_db():
 
 
 @app.post("/loan", response_model=LoanResponse)
-def create_loan(request: LoanRequest, db: Session = Depends(get_db)):
+def create_loan(request: LoanRequest, db: Session = Depends(get_db), user: str = Depends(get_current_user) ):
     try:
         calculator = LoanCalculator(
             request.principal,
             request.annual_rate,
-            request.tenure_years
+            request.tenure_years    
         )
         emi = calculator.calculate_emi()
 
@@ -70,3 +70,28 @@ def get_loan_by_id(loan_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Loan not found")
 
     return loan
+
+@app.post("/register")
+def register(user: UserCreate, db: Session = Depends(get_db)):
+    hashed = get_password_hash(user.password)
+    db_user = User(username=user.username, hashed_password=hashed)
+
+    db.add(db_user)
+    db.commit()
+    return {"msg": "User created"}
+
+@app.post("/token", response_model=Token)
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.username == form_data.username).first()
+
+    if not user or not verify_password(form_data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials"
+        )
+
+    token = create_access_token({"sub": user.username})
+    return {"access_token": token, "token_type": "bearer"}
