@@ -10,6 +10,7 @@ def get_db():
 def get_current_user():
     raise NotImplementedError("Implemented on Day 20")
 
+
 """Interview answer:
 
 “Why use dependencies for DB?”

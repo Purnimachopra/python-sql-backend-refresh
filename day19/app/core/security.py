@@ -1,6 +1,6 @@
 from passlib.context import CryptContext
 from datetime import datetime,timedelta
-from jose import JWTError, jwt
+from jose import jwt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:    
