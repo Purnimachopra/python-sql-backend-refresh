@@ -7,7 +7,7 @@ from app.db.session import SessionLocal
 from app.models.user import User
 from app.core.security import SECRET_KEY, ALGORITHM
 
-oauth2_scheme = OAuth2PasswordBearer( tokenUrl="/api/v1/auth/login") # MUST MATCH login route exactly
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_db():
     db = SessionLocal()
