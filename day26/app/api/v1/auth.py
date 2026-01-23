@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr, Field
-from app.core.dependencies import get_db
+from app.core.dependencies import get_db,get_current_user
 from app.models.user import User
 from app.models.refresh_token import RefreshToken
 from datetime import datetime, timezone
@@ -9,9 +9,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.db.session import SessionLocal
 from app.core.security import get_password_hash, verify_password, create_access_token
-from app.crud.refresh_token import create_refresh_token,get_refresh_token,revoke_all_user_tokens
+from app.crud.refresh_token import create_refresh_token,revoke_all_user_tokens,get_refresh_token
 from app.core.security import generate_refresh_token, refresh_token_expiry
-from app.core.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 # current UTC time, timezone-aware
@@ -56,31 +55,31 @@ def login(
 
     access_token = create_access_token({"sub": user.email})
 
-    refresh_token = generate_refresh_token()
-    create_refresh_token(
+    #refresh_token = generate_refresh_token()
+    refresh_token = create_refresh_token(
         db=db,
-        token=refresh_token,
-        user_id=user.id,
-        expires_at=refresh_token_expiry()
+        user_id=user.id
     )
 
     return {
         "access_token": access_token,
-        "refresh_token": refresh_token,
+        "refresh_token": refresh_token.token,
         "token_type": "bearer"
     }
 
 
 @router.post("/refreshToken")
-def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
+def refresh_token(refresh_token: str, db: Session = Depends(get_db)):
+    print("Incoming refresh token:", refresh_token)
+    tokens = db.query(RefreshToken).all()
+    print("Tokens in DB:", [t.token for t in tokens])
     token_obj = get_refresh_token(db, refresh_token)
 
     if not token_obj:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
-
-    if token_obj.expires_at < datetime.now(timezone.utc):
+    if token_obj.expires_at.replace(tzinfo=timezone.utc) < now_utc:
         raise HTTPException(status_code=401, detail="Refresh token expired")
-    
+
     if token_obj.revoked:
         # Token reuse detected
         revoke_all_user_tokens(db, token_obj.user_id)
@@ -88,13 +87,13 @@ def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
             status_code=403,
             detail="Refresh token revoked. Possible token reuse detected."
         )
+
     # Rotate token
     token_obj.revoked = True
     db.commit()
 
     new_refresh = create_refresh_token(db, token_obj.user_id)
     access_token = create_access_token({"sub": str(token_obj.user_id)})
-   
 
     return {
         "access_token": access_token,
@@ -106,10 +105,13 @@ def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
 def logout(
     refresh_token: str,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+   current_user: User = Depends(get_current_user)
 ):
+    print("inside logout")
     token_obj = get_refresh_token(db, refresh_token)
 
+   # print("Current user:", current_user.id)
+    print("Refresh token user:", token_obj.user_id)
     if not token_obj or token_obj.user_id != current_user.id:
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
