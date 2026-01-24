@@ -30,7 +30,8 @@ def test_auth_flow(client, db, create_test_user):
     tokens = login_resp.json()
     access_token = tokens["access_token"]
     refresh_token = tokens["refresh_token"]
-
+    print("Access token after login :", access_token)
+    print("Refresh token after login :", refresh_token)
     # -------------------------------
     # 2️⃣ REFRESH TOKEN ROTATION
     # -------------------------------
@@ -42,6 +43,8 @@ def test_auth_flow(client, db, create_test_user):
     new_tokens = refresh_resp.json()
     new_access_token = new_tokens["access_token"]
     new_refresh_token = new_tokens["refresh_token"]
+    print("New Access token:", new_access_token)
+    print("New Refresh token:", new_refresh_token)
 
     # 2️⃣a Check that new refresh token is different
     assert new_refresh_token != refresh_token

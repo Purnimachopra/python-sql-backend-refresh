@@ -27,13 +27,14 @@ def get_current_user(
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_email = payload.get("sub")
-        if user_email is None:
+       # user_email = payload.get("sub")
+        user_id = payload.get("sub")
+        if user_id  is None:
                 raise credentials_exception
     except Exception:
         raise credentials_exception
     
-    user = db.query(User).filter(User.email == user_email).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
             raise HTTPException(status_code=401, detail="User not found")
 

@@ -61,7 +61,7 @@ def login(
     if user:
         print("Stored hash:", user.hashed_password)
         print("Password valid:", verify_password(payload.password, user.hashed_password))
-    access_token = create_access_token({"sub": user.email})
+    access_token = create_access_token({"sub": str(user.id)})
 
     #refresh_token = generate_refresh_token()
     refresh_token = create_refresh_token(
@@ -77,8 +77,8 @@ def login(
 
 
 @router.post("/refreshToken")
-def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
-    print("Incoming refresh token:", refresh_token)
+def access_refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
+    print("Incoming refresh token:", payload.refresh_token)
     tokens = db.query(RefreshToken).all()
     print("Tokens in DB:", [t.token for t in tokens])
     token_obj = get_refresh_token(db, payload.refresh_token)
