@@ -1,0 +1,112 @@
+🔐 Secure Auth API – FastAPI
+
+Production-grade authentication backend built with FastAPI, implementing JWT access tokens, secure refresh token rotation, logout revocation, Alembic migrations, and Dockerized deployment.
+
+Designed to demonstrate real-world backend security patterns, not tutorial auth.
+
+🚀 Key Capabilities
+
+🔑 JWT-based authentication with short-lived access tokens
+
+🔄 Server-side refresh token rotation (one-time use)
+
+🚫 Refresh token revocation on logout
+
+⏱ Token expiry & replay-attack protection
+
+🗄 SQLAlchemy ORM + Alembic schema migrations
+
+🧪 Security-focused Pytest test suite
+
+🐳 Dockerized (12-factor compliant config)
+
+🧠 Why this project
+
+Most auth demos stop at “login works”.
+
+This project focuses on what breaks in production:
+
+token reuse
+
+logout invalidation
+
+expiry edge cases
+
+migration-safe schema evolution
+
+environment-safe Docker configuration
+
+🏗 High-Level Architecture
+app/
+├── api/v1/auth.py        # Login / Refresh / Logout
+├── models/              # User, RefreshToken
+├── services/            # Token lifecycle logic
+├── core/                # Security, config
+├── db/                  # SQLAlchemy + sessions
+├── main.py
+alembic/                 # Migrations
+tests/                   # Auth & security tests
+Dockerfile
+
+🐳 Run with Docker (recommended)
+docker build -t secure-auth-api .
+docker run -p 8000:8000 --env-file .env secure-auth-api
+
+
+Swagger UI:
+
+http://127.0.0.1:8000/docs
+
+
+.env is injected at runtime — secrets are not baked into the image
+
+🧪 Test Coverage
+pytest
+
+
+Includes tests for:
+
+Login success & failure
+
+Refresh token rotation
+
+Logout revocation
+
+Token expiry edge cases
+
+Refresh token reuse attacks
+
+⚙️ Tech Stack
+
+FastAPI
+
+SQLAlchemy
+
+Alembic
+
+JWT (python-jose)
+
+Passlib (bcrypt)
+
+Pytest
+
+Docker
+
+Pydantic Settings
+
+🔐 Security Highlights
+
+Refresh tokens stored server-side
+
+Old refresh tokens revoked immediately
+
+JWT sub uses user ID
+
+Expired / reused tokens rejected
+
+Clean separation of auth logic
+
+📌 Status
+
+Stable, tested, and migration-safe.
+Designed as a production-ready backend auth service.
